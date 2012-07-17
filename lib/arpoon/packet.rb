@@ -27,6 +27,10 @@ class Packet
 			raise ArgumentError, 'the passed data is not an ARP packet'
 		end
 
+		unless data[16, 2].unpack('n').first == 0x0800
+			raise ArgumentError, 'the passed data is not using the IP protocol'
+		end
+
 		hw_size = data[18, 1].unpack('C').first
 		pr_size = data[19, 1].unpack('C').first
 
