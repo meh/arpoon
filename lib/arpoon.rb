@@ -46,6 +46,8 @@ class Arpoon
 				end
 			end
 		}
+
+		@controller_at = '/var/run/arpoon.ctl'
 	end
 
 	def controller_at (path)
@@ -63,9 +65,13 @@ class Arpoon
 			interface.start
 		}
 
-		if @controller_at
-			@signature = EM.start_unix_domain_server(@controller_at, Controller)
-		end
+		File.umask(0).tap {|old|
+			begin
+				@signature = EM.start_server(@controller_at, Controller)
+			ensure
+				File.umask(old)
+			end
+		}
 	end
 
 	def stop

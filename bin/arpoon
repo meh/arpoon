@@ -1,6 +1,36 @@
 #! /usr/bin/env ruby
 require 'eventmachine'
 require 'arpoon'
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |o|
+	options[:socket] = '/var/run/arpoon.ctl'
+
+	o.on '-e', '--execute', 'enable execute mode' do
+		options[:execute] = true
+	end
+
+	o.on '-s', '--socket PATH', 'path to the UNIX socket' do |value|
+		options[:socket] = File.expand_path(value)
+	end
+
+	o.on '-r', '--raw', 'send a raw JSON string' do |value|
+		options[:raw] = true
+	end
+end.parse!
+
+if options[:execute]
+	require 'socket'
+	require 'json'
+
+	UNIXSocket.new(options[:socket]).tap {|s|
+		s.puts options[:raw] ? ARGV.join(' ') : ARGV.to_json
+	}
+
+	exit!
+end
 
 EM.run {
 	a = Arpoon.load(ARGV.first || '/etc/arpoon.rc')
@@ -13,7 +43,7 @@ EM.run {
 
 	%w[INT KILL].each {|sig|
 		trap sig do
-			d.stop
+			a.stop
 			
 			EM.stop_event_loop
 		end

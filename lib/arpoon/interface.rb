@@ -22,7 +22,7 @@ class Interface
 
 		def notify_readable (*)
 			@interface.capture.dispatch {|_, packet|
-				next unless packet = Packet.unpack(packet.body, self) rescue nil
+				next unless packet = Packet.unpack(packet.body, @interface) rescue nil
 
 				@interface.fire :packet, packet
 			}
