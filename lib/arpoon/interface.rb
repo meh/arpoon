@@ -15,6 +15,20 @@ require 'arpoon/packet'
 class Arpoon
 
 class Interface
+	class Handler < EM::Connection
+		def initialize (interface)
+			@interface = interface
+		end
+
+		def notify_readable (*)
+			@interface.capture.dispatch {|_, packet|
+				next unless packet = Packet.unpack(packet.body, self) rescue nil
+
+				@interface.fire :packet, packet
+			}
+		end
+	end
+
 	attr_reader :name, :capture
 
 	def initialize (name, &block)
@@ -24,31 +38,25 @@ class Interface
 		load &block if block
 	end
 
-	def start_capturing!
-		@thread = Thread.new {
-			@capture = FFI::PCap::Live.new(dev: @name.to_s, promisc: true, handler: FFI::PCap::Handler)
-			@capture.setfilter('arp')
+	def method_missing (*args, &block)
+		Arpoon.__send__ *args, &block
+	end
 
-			@capture.loop {|_, packet|
-				next unless packet = Packet.unpack(packet.body, self) rescue nil
+	def start
+		@capture = FFI::PCap::Live.new(device: @name.to_s, promisc: true, handler: FFI::PCap::Handler)
+		@capture.nonblocking = true
+		@capture.setfilter('arp')
 
-				fire :packet, packet
-			}
-		}
+		@handler = EM.watch @capture.selectable_fd, Handler, self
+		@handler.notify_readable = true
 
 		self
 	end
 
-	def stop_capturing!
-		return unless @thread
-
-		@capture.breakloop
+	def stop
+		@handler.detach
 
 		self
-	end
-
-	def wait
-		@thread.join
 	end
 
 	def load (path = nil, &block)

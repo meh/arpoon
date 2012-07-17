@@ -2,12 +2,20 @@
 require 'eventmachine'
 require 'arpoon'
 
-arpoon = Arpoon.load(ARGV.first || '/etc/arpoon.rc')
+EM.run {
+	a = Arpoon.load(ARGV.first || '/etc/arpoon.rc')
+	a.start
 
-%w[INT KILL].each {|sig|
-	trap sig do
-		arpoon.stop
-	end
+	EM.error_handler {|e|
+		$stderr.puts e.message
+		$stderr.puts e.backtrace.join("\n")
+	}
+
+	%w[INT KILL].each {|sig|
+		trap sig do
+			d.stop
+			
+			EM.stop_event_loop
+		end
+	}
 }
-
-arpoon.start
