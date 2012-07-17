@@ -1,0 +1,13 @@
+#! /usr/bin/env ruby
+require 'eventmachine'
+require 'arpoon'
+
+arpoon = Arpoon.load(ARGV.first || '/etc/arpoon.rc')
+
+%w[INT KILL].each {|sig|
+	trap sig do
+		arpoon.stop
+	end
+}
+
+arpoon.start
