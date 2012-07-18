@@ -23,6 +23,11 @@ command :connected do |name|
 
 	# get the ARP table entry for the gateway and cleanup danger notifications
 	gateways[interface] = table[gateway_for(name)]
+
+  command :disconnected, name
+end
+
+command :disconnected do |name|
 	danger.reject! { |a| a[0] == name }
 end
 
@@ -56,4 +61,44 @@ route.each {|entry|
 	interface(entry.device)
 	gateways[entry.device] = table[entry.gateway]
 }
+```
+
+Init scripts
+------------
+
+Arch Linux:
+
+```sh
+#! /bin/bash
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    stat_busy "Starting arpoon"
+    pkill -f "ruby.*arpoon" &> /dev/null
+    arpoon &> /dev/null &
+    add_daemon arpoon
+    stat_done
+    ;;
+
+  stop)
+    stat_busy "Stopping arpoon"
+    pkill -f "ruby.*arpoon" &> /dev/nunll
+    rm_daemon arpoon
+    stat_done
+    ;;
+
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+
+  *)
+    echo "usage: $0 {start|stop|restart}"
+esac
+
+exit 0
 ```
