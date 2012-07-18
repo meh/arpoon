@@ -46,7 +46,7 @@ class Packet
 
 			target_hw = HWAddr.new(data[32, 6].unpack('C6'))
 			target_ip = IPAddr.new_ntoh(data[38, 4])
-		elsif pr.size == 16
+		elsif pr_size == 16
 			sender_hw = HWAddr.new(data[22, 6].unpack('C6'))
 			sender_ip = IPAddr.new_ntoh(data[28, 16])
 
