@@ -12,6 +12,7 @@ require 'singleton'
 require 'eventmachine'
 
 require 'arpoon/table'
+require 'arpoon/route'
 require 'arpoon/interface'
 require 'arpoon/packet'
 require 'arpoon/controller'
@@ -36,13 +37,13 @@ class Arpoon
 		any {
 			on :packet do |packet|
 				if packet.request?
-					packet.interface.fire :request, packet
+					packet.interface.fire :request, packet, packet.interface
 				else
-					packet.interface.fire :reply, packet
+					packet.interface.fire :reply, packet, packet.interface
 				end
 
 				if packet.destination.broadcast?
-					packet.interface.fire :broadcast, packet
+					packet.interface.fire :broadcast, packet, packet.interface
 				end
 			end
 		}
@@ -96,9 +97,13 @@ class Arpoon
 		@table = Table.new
 	end
 
+	def route
+		Route.new
+	end
+
 	def load (path = nil, &block)
 		if path
-			instance_eval File.read(File.expand_path(path)), path
+			instance_eval File.read(File.expand_path(path)), path, 1
 		else
 			instance_exec &block
 		end
@@ -145,6 +150,7 @@ class Arpoon
 		end
 
 		@interfaces[name].load(&block) if block
+		@interfaces[name]
 	end
 
 	def any (&block)

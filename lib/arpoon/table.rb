@@ -60,6 +60,12 @@ class Table
 		def flags
 			Flags[super.to_i(16)]
 		end
+
+		Flags.fields.each {|name|
+			define_method "#{name}?" do
+				flags.has? name
+			end
+		}
 	end
 
 	include Enumerable
@@ -78,7 +84,7 @@ class Table
 		return enum_for :each, device unless block_given?
 
 		@entries.each {|entry|
-			yield entry if !device || device == entry.device
+			yield entry if !device || device.to_s == entry.device
 		}
 
 		self
@@ -86,7 +92,7 @@ class Table
 
 	def [] (what)
 		find {|entry|
-			entry.ip == what || entry.mac == what
+			what == entry.ip || what == entry.mac
 		}
 	end
 end

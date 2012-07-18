@@ -32,7 +32,7 @@ class Interface
 	attr_reader :name, :capture
 
 	def initialize (name, &block)
-		@name   = name
+		@name   = name.to_s
 		@events = Hash.new { |h, k| h[k] = [] }
 
 		load &block if block
@@ -61,7 +61,7 @@ class Interface
 
 	def load (path = nil, &block)
 		if path
-			instance_eval File.read(File.expand_path(path)), path
+			instance_eval File.read(File.expand_path(path)), path, 1
 		else
 			instance_exec &block
 		end
@@ -74,20 +74,26 @@ class Interface
 	end
 
 	def fire (name, *args)
-		[@events[:anything], @events[name]].each {|set|
-			delete = []
+		delete = []
 
-			set.each {|block|
-				case block.call(*args)
-				when :delete then delete << block
-				when :stop   then break
-				end
-			}
-
-			set.reject! { |b| delete.include? b }
+		@events[name].each {|block|
+			case block.call(*args)
+			when :delete then delete << block
+			when :stop   then break
+			end
 		}
 
+		@events[name] -= delete
+
 		self
+	end
+
+	def to_s
+		name
+	end
+
+	def to_sym
+		name.to_sym
 	end
 
 	def inspect

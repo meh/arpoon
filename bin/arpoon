@@ -22,8 +22,15 @@ OptionParser.new do |o|
 end.parse!
 
 if options[:execute]
-	require 'socket'
-	require 'json'
+	require 'arpoon/client'
+
+	Arpoon::Client.new(options[:socket]).tap {|c|
+		if options[:raw]
+			c.puts ARGV.join ' '
+		else
+			c.send_request *ARGV
+		end
+	}
 
 	UNIXSocket.new(options[:socket]).tap {|s|
 		s.puts options[:raw] ? ARGV.join(' ') : ARGV.to_json

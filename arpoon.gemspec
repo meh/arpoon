@@ -14,5 +14,5 @@ Gem::Specification.new {|s|
 
 	s.add_dependency 'bitmap'
 	s.add_dependency 'hwaddr'
-	s.add_dependency 'pcaprub'
+	s.add_dependency 'ffi-pcap', '>=0.2.1'
 }
