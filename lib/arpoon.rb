@@ -10,6 +10,7 @@
 
 require 'singleton'
 require 'eventmachine'
+require 'stringio'
 
 require 'arpoon/table'
 require 'arpoon/route'
@@ -48,14 +49,40 @@ class Arpoon
 			end
 		}
 
-		@controller_at = '/var/run/arpoon.ctl'
+		controller_at '/var/run/arpoon.ctl'
+		logs_at       '/var/log/arpoon.log'
 	end
 
 	def controller_at (path)
 		@controller_at = File.expand_path(path)
 	end
 
+	def logs_at (path)
+		@logs_at = File.expand_path(path)
+	end
 	def started?; @started; end
+
+	def log (what, group = nil)
+		io = StringIO.new
+
+		io.print "[#{Time.now}#{", #{group}" if group}] "
+
+		if what.is_a? Exception
+			io.puts "#{what.class.name}: #{what.message}"
+			io.puts what.backtrace
+		else
+			io.puts what
+		end
+
+		io.puts ''
+		io.seek 0
+
+		io.read.tap {|text|
+			$stderr.puts text
+
+			File.open(@logs_at, 'a') { |f| f.print text }
+		}
+	end
 
 	def start
 		return if started?

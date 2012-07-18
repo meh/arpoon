@@ -44,8 +44,7 @@ EM.run {
 	a.start
 
 	EM.error_handler {|e|
-		$stderr.puts e.message
-		$stderr.puts e.backtrace.join("\n")
+		a.log e
 	}
 
 	%w[INT KILL].each {|sig|
