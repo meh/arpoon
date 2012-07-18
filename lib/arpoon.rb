@@ -154,13 +154,17 @@ class Arpoon
 
 	def command (*args, &block)
 		if block
-			@commands[args.first.to_sym] = block
+			command = args.first.to_sym
+
+			@commands[command] = block
 		else
 			controller = args.shift
 			command    = args.shift
 
 			controller.instance_exec *args, &@commands[command.to_sym]
 		end
+	rescue Exception => e
+		log e, "command: #{command}"
 	end
 
 	def interface (name, &block)
