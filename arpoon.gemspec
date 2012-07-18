@@ -1,6 +1,8 @@
+Kernel.load 'lib/arpoon/version.rb'
+
 Gem::Specification.new {|s|
 	s.name         = 'arpoon'
-	s.version      = '0.0.1'
+	s.version      = Arpoon.version
 	s.author       = 'meh.'
 	s.email        = 'meh@paranoici.org'
 	s.homepage     = 'http://github.com/meh/arpoon'
