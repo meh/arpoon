@@ -74,10 +74,7 @@ class Arpoon
 			io.puts what
 		end
 
-		io.puts ''
-		io.seek 0
-
-		io.read.tap {|text|
+		io.string.tap {|text|
 			$stderr.puts text
 
 			File.open(@logs_at, 'a') { |f| f.print text }
