@@ -66,28 +66,19 @@ route.each {|entry|
 Init scripts
 ------------
 
-Arch Linux:
+SysV init script
 
 ```sh
 #! /bin/bash
 
-. /etc/rc.conf
-. /etc/rc.d/functions
-
 case "$1" in
   start)
-    stat_busy "Starting arpoon"
     pkill -f "ruby.*arpoon" &> /dev/null
     arpoon &> /dev/null &
-    add_daemon arpoon
-    stat_done
     ;;
 
   stop)
-    stat_busy "Stopping arpoon"
     pkill -f "ruby.*arpoon" &> /dev/nunll
-    rm_daemon arpoon
-    stat_done
     ;;
 
   restart)
@@ -101,4 +92,17 @@ case "$1" in
 esac
 
 exit 0
+```
+
+systemd arpoon.service
+
+```
+[Unit]
+Description=arp event system
+
+[Service]
+ExecStart=/usr/bin/ruby -S arpoon
+
+[Install]
+WantedBy=multi-user.target
 ```
