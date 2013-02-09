@@ -16,5 +16,6 @@ Gem::Specification.new {|s|
 
 	s.add_dependency 'bitmap'
 	s.add_dependency 'hwaddr'
+	s.add_dependency 'eventmachine'
 	s.add_dependency 'ffi-pcap', '>=0.2.1'
 }
